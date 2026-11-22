@@ -26,6 +26,8 @@ targets:
         NSSupportsLiveActivities: true
         UIBackgroundModes:
           - audio
+          - location
+        NSLocationWhenInUseUsageDescription: Only used to keep Claude Island running in the background. Your location is never read or sent anywhere.
         NSLocalNetworkUsageDescription: Claude Island connects to the relay running on your PC to show your Claude Code status.
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true

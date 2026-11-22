@@ -19,6 +19,7 @@ struct ContentView: View {
     @AppStorage("address") private var address = ""
     @AppStorage("token") private var token = ""
     @AppStorage("enabled") private var enabled = false
+    @AppStorage("useLocation") private var useLocation = false
 
     var body: some View {
         NavigationStack {
@@ -40,6 +41,7 @@ struct ContentView: View {
                             controller.stop()
                         } else {
                             enabled = true
+                            controller.wantsLocation = useLocation
                             controller.start(address: address, token: token)
                         }
                     }
@@ -59,6 +61,12 @@ struct ContentView: View {
                         LabeledContent("Doing", value: s.detail)
                         LabeledContent("Sessions", value: "\(s.sessionCount)")
                     }
+                }
+
+                Section {
+                    Toggle("Extra keep-alive (location)", isOn: $useLocation)
+                } footer: {
+                    Text("Turn this on if the island stops updating when the app is in the background. iOS will ask for location access (choose While Using). Your location is never read or sent anywhere. It's only used to keep the app running.")
                 }
 
                 Section("Diagnostics") {
@@ -84,8 +92,12 @@ struct ContentView: View {
         }
         .onAppear {
             if enabled && !controller.running {
+                controller.wantsLocation = useLocation
                 controller.start(address: address, token: token)
             }
+        }
+        .onChange(of: useLocation) { _, newValue in
+            controller.setLocationKeepAlive(newValue)
         }
         .onChange(of: phase) { _, newPhase in
             controller.setBackground(newPhase == .background)

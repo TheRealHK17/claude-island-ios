@@ -45,6 +45,8 @@ final class IslandController: ObservableObject {
     private var task: Task<Void, Never>?
     private var activity: Activity<ClaudeActivityAttributes>?
     private let keepAlive = KeepAlive()
+    private let locationKeepAlive = LocationKeepAlive()
+    var wantsLocation = false
 
     // MARK: - Start / stop
 
@@ -56,6 +58,7 @@ final class IslandController: ObservableObject {
         }
         running = true
         keepAlive.start()
+        if wantsLocation { locationKeepAlive.start() }
         task = Task { [weak self] in
             await self?.run(url: url, token: token)
         }
@@ -66,6 +69,7 @@ final class IslandController: ObservableObject {
         task = nil
         running = false
         keepAlive.stop()
+        locationKeepAlive.stop()
         status = "Disconnected"
         endAllActivities()
     }
@@ -76,6 +80,17 @@ final class IslandController: ObservableObject {
     func refreshActivity() {
         if running, let s = last {
             present(s)
+        }
+    }
+
+    func setLocationKeepAlive(_ on: Bool) {
+        wantsLocation = on
+        if running {
+            if on {
+                locationKeepAlive.start()
+            } else {
+                locationKeepAlive.stop()
+            }
         }
     }
 
