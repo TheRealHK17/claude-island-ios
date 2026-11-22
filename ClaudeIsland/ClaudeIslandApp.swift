@@ -61,6 +61,19 @@ struct ContentView: View {
                     }
                 }
 
+                Section("Diagnostics") {
+                    LabeledContent("Last update") {
+                        if let d = controller.lastEventAt {
+                            Text(d, style: .time)
+                        } else {
+                            Text("never")
+                        }
+                    }
+                    LabeledContent("Updates received", value: "\(controller.eventCount)")
+                    LabeledContent("...while in background", value: "\(controller.backgroundEventCount)")
+                    LabeledContent("Audio keep-alive", value: controller.audioPlaying ? "playing" : "NOT playing")
+                }
+
                 Section {
                     Text("Leave this app open in the app switcher (don't swipe it away) and the island keeps updating while you use other apps. If the island disappears, open this app once to bring it back.")
                         .font(.footnote)
@@ -75,8 +88,10 @@ struct ContentView: View {
             }
         }
         .onChange(of: phase) { _, newPhase in
+            controller.setBackground(newPhase == .background)
             if newPhase == .active {
                 controller.refreshActivity()
+                controller.refreshDiagnostics()
             }
         }
     }

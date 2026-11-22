@@ -7,6 +7,9 @@ final class KeepAlive {
     private var player: AVAudioPlayer?
     private var observer: NSObjectProtocol?
 
+    /// For the diagnostics panel.
+    var isPlaying: Bool { player?.isPlaying ?? false }
+
     func start() {
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playback, mode: .default, options: [.mixWithOthers])

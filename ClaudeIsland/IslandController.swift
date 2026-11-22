@@ -35,6 +35,13 @@ final class IslandController: ObservableObject {
     @Published var last: RelayState?
     @Published var running = false
 
+    // Diagnostics (shown in the app so we can see what happens in the background)
+    @Published var lastEventAt: Date?
+    @Published var eventCount = 0
+    @Published var backgroundEventCount = 0
+    @Published var audioPlaying = false
+    private var inBackground = false
+
     private var task: Task<Void, Never>?
     private var activity: Activity<ClaudeActivityAttributes>?
     private let keepAlive = KeepAlive()
@@ -70,6 +77,14 @@ final class IslandController: ObservableObject {
         if running, let s = last {
             present(s)
         }
+    }
+
+    func setBackground(_ value: Bool) {
+        inBackground = value
+    }
+
+    func refreshDiagnostics() {
+        audioPlaying = keepAlive.isPlaying
     }
 
     private func fail(_ message: String) {
@@ -127,6 +142,10 @@ final class IslandController: ObservableObject {
                     if let data = json.data(using: .utf8),
                        let s = try? JSONDecoder().decode(RelayState.self, from: data) {
                         last = s
+                        lastEventAt = Date()
+                        eventCount += 1
+                        if inBackground { backgroundEventCount += 1 }
+                        audioPlaying = keepAlive.isPlaying
                         present(s)
                     }
                 }
